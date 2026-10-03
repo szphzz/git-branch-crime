@@ -9,7 +9,7 @@
 | Korbin White     | korbinvwhite | API calls - Census Bureau and DataSF San Francisco Street Tree Inventory |
 | Sophia Chung     | szphzz       | Visualiztion - StreamLit                                                 |
 | Brendan Waterval | Brendanw1    | Webscraping - SF Police Reports                                          |
-| Miguel Cerna     | id           | Data Cleansing - EDA                                                     |
+| Miguel Cerna     | dudedatas           | Data Cleansing - EDA                                                     |
 
 ---
 
