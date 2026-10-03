@@ -51,7 +51,7 @@ git switch branch_name
 Copy the example file and fill in your own values:
 
 ```bash
-cp .env_template .env
+cp .env_template .env_template
 ```
 
 | Variable | Description | Example |
