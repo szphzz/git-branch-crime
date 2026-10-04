@@ -1,0 +1,9 @@
+# OS files
+.DS_Store
+
+# IDE settings
+.idea/
+
+# Python bytecode
+__pycache__/
+*.pyc
