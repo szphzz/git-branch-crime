@@ -1,31 +1,24 @@
 ## Is there a relationship between trees and crime in San Francisco?
--Previous studies in Baltimore, Austin, and Cincinnati have linked more trees with increased public safety,
--and we would like to analyze if this extends to San Francisco.
+Previous studies in Baltimore, Austin, and Cincinnati have linked more trees with increased public safety, and we would like to analyze if this extends to San Francisco.
 
 ## Team Members
 
 | Name             | GitHubID     | Role / Focus                                                             |
 |------------------|--------------|--------------------------------------------------------------------------|
 | Korbin White     | korbinvwhite | API calls - Census Bureau and DataSF San Francisco Street Tree Inventory |
-| Sophia Chung     | szphzz       | Visualiztion - StreamLit                                                 |
+| Sophia Chung     | szphzz       | Visualization - StreamLit                                                |
 | Brendan Waterval | Brendanw1    | Webscraping - SF Police Reports                                          |
-| Miguel Cerna     | dudedatas    | Data Cleansing - EDA                                                     |
+| Miguel Cerna     | dudedatas    | Data Cleaning & EDA                                                      |
 
 ---
 
 ## Problem Statement
-- We combine San Francisco Police Department Crime Reports and DataSF San Francisco Street Tree Inventory to test 
-- whether there is an association between trees and crime by district, while also considering demographic and 
-- socioeconomic characteristics. We will create a dashboard with tree and crime counts on a map, with the features to 
-- narrow down types of tree by species, types of crime, and month/year and demographic and socioeconomic factors 
-- such as population, median household income, poverty, and employment. This could be helpful for city planners, 
-- landscapers, residents, and police.
+- We combine San Francisco Police Department Crime Reports and DataSF San Francisco Street Tree Inventory to test whether there is an association between trees and crime by district, while also considering demographic and socioeconomic characteristics. We will create a dashboard with tree and crime counts on a map, with the features to narrow down types of tree by species, types of crime, and month/year and demographic and socioeconomic factors such as population, median household income, poverty, and employment. This could be helpful for city planners, landscapers, residents, and police.
 
 
 ---
 
 ## Data Sources and Integration Goal
-- Follow the direction given in the 1st assignment
 
 ### Sources
 | #   | Source & Link                                                                                                          | Method   | What it contains                                         | Update frequency    | Access requirements |
@@ -37,7 +30,6 @@
 Note: If we need a key, say which environment variable holds it and make sure that variable also appears in the .env_template
 
 ### Integration Goal
-- Follow the direction given in the 1st assignment
 
 ---
 
@@ -51,7 +43,8 @@ Note: If we need a key, say which environment variable holds it and make sure th
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/szphzz/git-branch-crime.git
-cd REPO
+cd git-branch-crime
+git switch branch_name
 ```
 
 ### 2. Configure environment variables
