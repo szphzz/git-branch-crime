@@ -1,0 +1,4 @@
+# scraped output and cached PDFs stay local / in GCS, not in git
+data/
+.venv/
+__pycache__/
