@@ -1,17 +1,16 @@
 """
 SFPD CompStat crime-report scraper.
 
-Pipeline (ETL):
-  Extract   -> scrape the Crime Reports page for monthly CompStat PDF links,
-               then download each PDF (cached on disk).
-  Transform -> read each PDF page with pdfplumber, detect which district the
-               page belongs to, and parse the table rows into tidy records
-               (one row per report month x district x crime category).
-  Load      -> write CSV/JSON locally and (optionally) upload JSON to the
+Steps:
+  Scrape the Crime Reports page for monthly CompStat PDF links,
+               then download each PDF.
+  Read each PDF page with pdfplumber, detect which district the
+               page belongs to, and parse the table rows into tidy records.
+  Write CSV/JSON locally and upload JSON to the
                team's GCS bucket.
 
 The Crime Reports page is static Drupal HTML, so requests + BeautifulSoup is
-enough (no Playwright needed). The actual numbers live inside the PDFs.
+enough. The actual numbers live inside the PDFs.
 
 Usage:
     python -m scraping.sfpd_scraper --since 2023-01          # backfill
@@ -95,7 +94,7 @@ ROW_PATTERNS: list[tuple[str, str, str]] = [
     (r"total gun violence incidents", "total_gun_violence_incidents", "firearm"),
     (r"total shooting incidents \(217 & 187\)", "total_shooting_incidents", "firearm"),
 ]
-# A label only counts if it is immediately followed by a number, so e.g.
+# A label only counts if it is immediately followed by a number.
 # "Other Assaults ..." never matches the bare "Other" pattern.
 _COMPILED = [
     (re.compile(rf"^\s*{pat}\s+(?=\d)", re.IGNORECASE), cat, sec)
@@ -126,9 +125,8 @@ class ReportLink:
         return f"{self.year:04d}-{self.month:02d}"
 
 
-# --------------------------------------------------------------------------
-# Extract
-# --------------------------------------------------------------------------
+# Extract Step:
+
 def fetch_report_links(html: str | None = None) -> list[ReportLink]:
     """Return every monthly CompStat PDF linked from the Crime Reports page."""
     if html is None:
@@ -188,9 +186,8 @@ def pdf_page_texts(pdf_path: Path) -> list[str]:
         return [page.extract_text() or "" for page in pdf.pages]
 
 
-# --------------------------------------------------------------------------
-# Transform
-# --------------------------------------------------------------------------
+# Next, Transform:
+
 _DISTRICT_RES = [
     # "COMPSTAT - Page 2 - CENTRAL" (both layouts)
     re.compile(r"page 2\s*-\s*(" + "|".join(DISTRICTS) + r")\b", re.IGNORECASE),
@@ -282,10 +279,7 @@ def validate(records: list[dict], period: str) -> list[str]:
             warnings.append(f"{period} {d}: violent+property != total part 1")
     return warnings
 
-
-# --------------------------------------------------------------------------
-# Load
-# --------------------------------------------------------------------------
+# Then, Load:
 def save_local(records: list[dict], out_dir: Path | None = None) -> tuple[Path, Path]:
     out_dir = out_dir or DATA_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -325,10 +319,7 @@ def upload_to_gcs(records: list[dict]) -> str:
     )
     return name
 
-
-# --------------------------------------------------------------------------
 # Orchestration
-# --------------------------------------------------------------------------
 def scrape(since: str | None = None, latest: bool = False) -> tuple[list[dict], list[str]]:
     """Run extract + transform. Returns (records, warnings)."""
     links = fetch_report_links()

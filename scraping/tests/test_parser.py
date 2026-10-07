@@ -10,7 +10,7 @@ from scraping.sfpd_scraper import (
 LINK_2026 = ReportLink(2026, 8, "SFPD Compstat Report August 2026", "https://example/aug2026.pdf")
 LINK_2023 = ReportLink(2023, 1, "SFPD Compstat Report January 2023", "https://example/jan2023.pdf")
 
-# --- 2025+ Power BI layout: district header comes BEFORE the table ---------
+# 2025+ Power BI layout: district header comes BEFORE the table
 CENTRAL_P1_2026 = """COMPSTAT Power BI Desktop
 CENTRAL DISTRICT PROFILE
 August 1-31, 2026
@@ -53,7 +53,7 @@ Jan Feb Mar Apr May Jun Jul Aug
 104
 """
 
-# Percentages wrapped onto their own lines (seen in the Mission page).
+# Percentages wrapped onto their own lines.
 MISSION_WRAPPED = """MISSION DISTRICT PROFILE
 Burglary 60 26 -57% 34 26 -24% 399 283
 Person/Other Theft * 126 85 -33% 112 85 -24% 1029 1030
@@ -61,7 +61,7 @@ Person/Other Theft * 126 85 -33% 112 85 -24% 1029 1030
 0.1%
 """
 
-# --- 2023 layout: district name comes AFTER the table ----------------------
+# 2023 layout: district name comes AFTER the table
 CENTRAL_P1_2023 = """JANUARY JANUARY DECEMBER JANUARY
 2022 2023 2022 2023
 HOMICIDE 0 0 not cal 0 0 not cal 0 0 not cal

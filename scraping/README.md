@@ -1,21 +1,18 @@
-# SFPD Crime Reports Scraper (scraping branch — Brendan)
+# SFPD Crime Reports Scraper — Brendan Waterval
 
 Source: <https://www.sanfranciscopolice.org/stay-safe/crime-data/crime-reports>
 
-## How the source works
-
-- The page is **static HTML** (Drupal) listing one CompStat PDF per month, 2015 → present.
-  `requests` + `BeautifulSoup` gets the links; no Playwright needed.
+- The page is static HTML listing one CompStat PDF per month, from 2015 to present.
+  `requests` and `BeautifulSoup` get the links; we do not need Playwright.
 - The numbers are **inside the PDFs**. Each PDF has 2 pages per district
   (Citywide + 10 police districts): page 1 = Part 1 crimes, page 2 = domestic violence + firearms.
 - Every table row has 6 counts: same month last year, this month, last month, this month (repeat),
-  YTD last year, YTD this year. Percent columns are skipped (they're blank when the base is 0
-  and sometimes wrap onto other lines). They can be recomputed from the counts.
+  YTD last year, YTD this year. Percent columns are skipped because they're blank when the base is 0
+  and sometimes wrap onto other lines. They can be recomputed from the counts.
 - Two layouts are handled: the 2025+ Power BI layout and the 2023-era layout (where the
-  district name is printed *after* the table). Category names are normalized across both,
-  e.g. `AUTO THEFT` / `Motor Vehicle Theft` → `motor_vehicle_theft`.
+  district name is printed *after* the table). Category names are normalized across both like `AUTO THEFT` / `Motor Vehicle Theft` into `motor_vehicle_theft`.
 
-## Output (long / tidy format)
+## Output
 
 One row per `report_period × district × category`:
 
@@ -29,21 +26,20 @@ One row per `report_period × district × category`:
 | ytd_current, ytd_prior_year | 104, 131 |
 | source_url, scraped_at | PDF link, UTC timestamp |
 
-Note: these are **police districts**, not supervisor districts — joining to tree/census data
-will need a crosswalk or a spatial join (flag for cleaning/EDA).
+These are police districts, not supervisor districts (might be a future concern).
 
 ## Run
 
 ```bash
-bash scraping/run_scraper.sh                    # backfill from 2023-01 → scraping/data/
+bash scraping/run_scraper.sh                    
 bash scraping/run_scraper.sh --latest           # newest month only
-bash scraping/run_scraper.sh --since 2025-01 --upload   # also write JSON to the GCS bucket
+bash scraping/run_scraper.sh --since 2025-01 --upload  # also uploads to bucket
 ```
 
 `--upload` uses the same env vars as `fast_api/fast_api.py`:
 `GCP_SERVICE_ACCOUNT_KEY`, `GCP_PROJECT_ID`, `GCP_BUCKET_NAME`.
 
-## FastAPI integration (for the fastapi branch)
+## FastAPI integration
 
 ```python
 from scraping.crime_router import router as crime_router
@@ -58,9 +54,3 @@ app.include_router(crime_router)
 
 `python -m pytest scraping/tests -q` — fixtures are text copied from the real Aug 2026 and
 Jan 2023 PDFs.
-
-## Known gaps / TODO
-
-- Pre-2023 PDFs use other layouts; they'll show up as "missing districts" warnings.
-- Verify `pdfplumber` line output against the fixtures on a few real PDFs (`-v` flag logs skipped rows).
-- Duplicate-proofing in the bucket (currently each run writes a new timestamped file).

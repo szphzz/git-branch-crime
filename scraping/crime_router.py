@@ -1,12 +1,12 @@
 """
 FastAPI router for the SFPD scraper.
 
-The FastAPI owner can plug this in with two lines in fast_api/fast_api.py:
+The FastAPI owner can plug this into fast_api:
 
     from scraping.crime_router import router as crime_router
     app.include_router(crime_router)
 
-Cloud Scheduler then calls:  POST /crime-data?latest=true   (monthly)
+Cloud Scheduler then calls:  POST /crime-data?latest=true   (calls monthly)
 A one-time backfill:         POST /crime-data?since=2023-01
 """
 
