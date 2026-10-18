@@ -1,16 +1,17 @@
 """
 SFPD CompStat crime-report scraper.
 
-Steps:
-  Scrape the Crime Reports page for monthly CompStat PDF links,
-               then download each PDF.
-  Read each PDF page with pdfplumber, detect which district the
-               page belongs to, and parse the table rows into tidy records.
-  Write CSV/JSON locally and upload JSON to the
+Pipeline (ETL):
+  Extract   -> scrape the Crime Reports page for monthly CompStat PDF links,
+               then download each PDF (cached on disk).
+  Transform -> read each PDF page with pdfplumber, detect which district the
+               page belongs to, and parse the table rows into tidy records
+               (one row per report month x district x crime category).
+  Load      -> write CSV/JSON locally and (optionally) upload JSON to the
                team's GCS bucket.
 
 The Crime Reports page is static Drupal HTML, so requests + BeautifulSoup is
-enough. The actual numbers live inside the PDFs.
+enough (no Playwright needed). The actual numbers live inside the PDFs.
 
 Usage:
     python -m scraping.sfpd_scraper --since 2023-01          # backfill
@@ -94,7 +95,7 @@ ROW_PATTERNS: list[tuple[str, str, str]] = [
     (r"total gun violence incidents", "total_gun_violence_incidents", "firearm"),
     (r"total shooting incidents \(217 & 187\)", "total_shooting_incidents", "firearm"),
 ]
-# A label only counts if it is immediately followed by a number.
+# A label only counts if it is immediately followed by a number, so e.g.
 # "Other Assaults ..." never matches the bare "Other" pattern.
 _COMPILED = [
     (re.compile(rf"^\s*{pat}\s+(?=\d)", re.IGNORECASE), cat, sec)
@@ -125,8 +126,9 @@ class ReportLink:
         return f"{self.year:04d}-{self.month:02d}"
 
 
-# Extract Step:
-
+# --------------------------------------------------------------------------
+# Extract
+# --------------------------------------------------------------------------
 def fetch_report_links(html: str | None = None) -> list[ReportLink]:
     """Return every monthly CompStat PDF linked from the Crime Reports page."""
     if html is None:
@@ -186,8 +188,9 @@ def pdf_page_texts(pdf_path: Path) -> list[str]:
         return [page.extract_text() or "" for page in pdf.pages]
 
 
-# Next, Transform:
-
+# --------------------------------------------------------------------------
+# Transform
+# --------------------------------------------------------------------------
 _DISTRICT_RES = [
     # "COMPSTAT - Page 2 - CENTRAL" (both layouts)
     re.compile(r"page 2\s*-\s*(" + "|".join(DISTRICTS) + r")\b", re.IGNORECASE),
@@ -279,13 +282,14 @@ def validate(records: list[dict], period: str) -> list[str]:
             warnings.append(f"{period} {d}: violent+property != total part 1")
     return warnings
 
-# Then, Load:
-def save_local(records: list[dict], out_dir: Path | None = None,
-               period: str | None = None) -> tuple[Path, Path]:
+
+# --------------------------------------------------------------------------
+# Load
+# --------------------------------------------------------------------------
+def save_local(records: list[dict], out_dir: Path | None = None) -> tuple[Path, Path]:
     out_dir = out_dir or DATA_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
-    stem = f"sfpd_compstat_{period}" if period else "sfpd_compstat"
-    csv_path, json_path = out_dir / f"{stem}.csv", out_dir / f"{stem}.json"
+    csv_path, json_path = out_dir / "sfpd_compstat.csv", out_dir / "sfpd_compstat.json"
     if records:
         with csv_path.open("w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(records[0].keys()))
@@ -295,7 +299,7 @@ def save_local(records: list[dict], out_dir: Path | None = None,
     return csv_path, json_path
 
 
-def upload_to_gcs(records: list[dict], period: str | None = None) -> str:
+def upload_to_gcs(records: list[dict]) -> str:
     """Upload records as JSON to the team bucket (same env vars as fast_api.py)."""
     from dotenv import load_dotenv
     from google.cloud import storage
@@ -315,14 +319,16 @@ def upload_to_gcs(records: list[dict], period: str | None = None) -> str:
     else:  # e.g. on Cloud Run, use the attached service account
         client = storage.Client(project=project)
 
-    suffix = f"_{period}" if period else ""
-    name = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_crime-data{suffix}.json"
+    name = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_crime-data.json"
     client.bucket(bucket_name).blob(name).upload_from_string(
         json.dumps(records), content_type="application/json"
     )
     return name
 
+
+# --------------------------------------------------------------------------
 # Orchestration
+# --------------------------------------------------------------------------
 def scrape(since: str | None = None, latest: bool = False) -> tuple[list[dict], list[str]]:
     """Run extract + transform. Returns (records, warnings)."""
     links = fetch_report_links()
@@ -355,8 +361,6 @@ def main() -> None:
                     help="earliest report month YYYY-MM (default 2023-01)")
     ap.add_argument("--latest", action="store_true", help="only the newest report")
     ap.add_argument("--upload", action="store_true", help="also upload JSON to GCS")
-    ap.add_argument("--per-month", action="store_true",
-                    help="write (and upload) one file per report month instead of one combined file")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
     # Root stays at INFO; -v only makes *our* logger verbose. pdfminer
@@ -369,19 +373,10 @@ def main() -> None:
     records, warnings = scrape(since=args.since, latest=args.latest)
     for w in warnings:
         log.warning(w)
-    if args.per_month:
-        by_period: dict[str, list[dict]] = {}
-        for r in records:
-            by_period.setdefault(r["report_period"], []).append(r)
-        batches = sorted(by_period.items())
-    else:
-        batches = [(None, records)]
-    for period, recs in batches:
-        csv_path, json_path = save_local(recs, period=period)
-        log.info("wrote %d rows -> %s, %s", len(recs), csv_path, json_path)
-        if args.upload:
-            log.info("uploaded gs://%s/%s", os.getenv("GCP_BUCKET_NAME"),
-                     upload_to_gcs(recs, period=period))
+    csv_path, json_path = save_local(records)
+    log.info("wrote %d rows -> %s, %s", len(records), csv_path, json_path)
+    if args.upload:
+        log.info("uploaded gs://%s/%s", os.getenv("GCP_BUCKET_NAME"), upload_to_gcs(records))
 
 
 if __name__ == "__main__":
