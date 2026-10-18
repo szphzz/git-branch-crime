@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8501
 
-CMD streamlit run hw4.py --server.address=0.0.0.0 --server.port=8501
+CMD streamlit run streamlit_app.py --server.address=0.0.0.0 --server.port=8501
