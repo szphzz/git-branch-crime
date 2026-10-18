@@ -2,9 +2,9 @@ FROM python:3.13-slim
 
 WORKDIR ./fast_api
 
-RUN pip install -r requirements.txt
-
 COPY * ./
+
+RUN pip install -r requirements.txt
 
 EXPOSE 8000
 
