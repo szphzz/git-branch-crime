@@ -89,6 +89,22 @@ def read_latest(match, label):
     return read_blob(find_blobs(match, label)[-1])
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def newest_blob_name(match_key, label):
+    newest = None
+    for b in get_bucket().list_blobs():
+        if match_key in os.path.basename(b.name) and (newest is None or b.updated > newest.updated):
+            newest = b
+    if newest is None:
+        st.error(f"No {label} file found in bucket `{bucket_name}`.")
+        st.stop()
+    return newest.name
+
+
+def read_newest(match_key, label):
+    return read_blob(newest_blob_name(match_key, label))
+
+
 # Data loading & processing (all cached)
 def acs_clean(s):
     s = pd.to_numeric(s, errors="coerce")
@@ -118,7 +134,7 @@ def load_tracts():
 
 @st.cache_data(ttl=86400, show_spinner="Loading census data…")
 def load_census():
-    raw = json.loads(read_latest(lambda b: "census-data" in b, "census"))
+    raw = json.loads(read_newest("census-data", "census"))
     df = pd.DataFrame(raw[1:], columns=raw[0])
     poverty = acs_clean(df["B17001_001E"]).replace(0, np.nan)
     return pd.DataFrame({
@@ -150,7 +166,7 @@ def load_crime():
 
 @st.cache_data(ttl=86400, show_spinner="Loading street trees (large file)…")
 def load_trees(_district_geoms, _tract_geoms, district_names, tract_ids):
-    records = json.loads(read_latest(lambda b: "tree-data" in b, "tree"))
+    records = json.loads(read_newest("tree-data", "tree"))
     trees = pd.DataFrame([(r.get("latitude"), r.get("longitude")) for r in records],
                          columns=["lat", "lon"])
     total_rows = len(trees)
