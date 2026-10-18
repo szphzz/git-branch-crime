@@ -34,6 +34,7 @@ These are police districts, not supervisor districts (might be a future concern)
 bash scraping/run_scraper.sh                    
 bash scraping/run_scraper.sh --latest           # newest month only
 bash scraping/run_scraper.sh --since 2025-01 --upload  # also uploads to bucket
+bash scraping/run_scraper.sh --since 2026-01 --per-month  # one file per month, e.g. sfpd_compstat_2026-03.json
 ```
 
 `--upload` uses the same env vars as `fast_api/fast_api.py`:

@@ -280,10 +280,12 @@ def validate(records: list[dict], period: str) -> list[str]:
     return warnings
 
 # Then, Load:
-def save_local(records: list[dict], out_dir: Path | None = None) -> tuple[Path, Path]:
+def save_local(records: list[dict], out_dir: Path | None = None,
+               period: str | None = None) -> tuple[Path, Path]:
     out_dir = out_dir or DATA_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
-    csv_path, json_path = out_dir / "sfpd_compstat.csv", out_dir / "sfpd_compstat.json"
+    stem = f"sfpd_compstat_{period}" if period else "sfpd_compstat"
+    csv_path, json_path = out_dir / f"{stem}.csv", out_dir / f"{stem}.json"
     if records:
         with csv_path.open("w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(records[0].keys()))
@@ -293,7 +295,7 @@ def save_local(records: list[dict], out_dir: Path | None = None) -> tuple[Path, 
     return csv_path, json_path
 
 
-def upload_to_gcs(records: list[dict]) -> str:
+def upload_to_gcs(records: list[dict], period: str | None = None) -> str:
     """Upload records as JSON to the team bucket (same env vars as fast_api.py)."""
     from dotenv import load_dotenv
     from google.cloud import storage
@@ -313,7 +315,8 @@ def upload_to_gcs(records: list[dict]) -> str:
     else:  # e.g. on Cloud Run, use the attached service account
         client = storage.Client(project=project)
 
-    name = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_crime-data.json"
+    suffix = f"_{period}" if period else ""
+    name = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_crime-data{suffix}.json"
     client.bucket(bucket_name).blob(name).upload_from_string(
         json.dumps(records), content_type="application/json"
     )
@@ -352,6 +355,8 @@ def main() -> None:
                     help="earliest report month YYYY-MM (default 2023-01)")
     ap.add_argument("--latest", action="store_true", help="only the newest report")
     ap.add_argument("--upload", action="store_true", help="also upload JSON to GCS")
+    ap.add_argument("--per-month", action="store_true",
+                    help="write (and upload) one file per report month instead of one combined file")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
     # Root stays at INFO; -v only makes *our* logger verbose. pdfminer
@@ -364,10 +369,19 @@ def main() -> None:
     records, warnings = scrape(since=args.since, latest=args.latest)
     for w in warnings:
         log.warning(w)
-    csv_path, json_path = save_local(records)
-    log.info("wrote %d rows -> %s, %s", len(records), csv_path, json_path)
-    if args.upload:
-        log.info("uploaded gs://%s/%s", os.getenv("GCP_BUCKET_NAME"), upload_to_gcs(records))
+    if args.per_month:
+        by_period: dict[str, list[dict]] = {}
+        for r in records:
+            by_period.setdefault(r["report_period"], []).append(r)
+        batches = sorted(by_period.items())
+    else:
+        batches = [(None, records)]
+    for period, recs in batches:
+        csv_path, json_path = save_local(recs, period=period)
+        log.info("wrote %d rows -> %s, %s", len(recs), csv_path, json_path)
+        if args.upload:
+            log.info("uploaded gs://%s/%s", os.getenv("GCP_BUCKET_NAME"),
+                     upload_to_gcs(recs, period=period))
 
 
 if __name__ == "__main__":
