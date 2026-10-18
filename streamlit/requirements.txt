@@ -1,0 +1,7 @@
+streamlit>=1.41
+pandas
+numpy
+pydeck
+shapely>=2.0
+google-cloud-storage
+python-dotenv

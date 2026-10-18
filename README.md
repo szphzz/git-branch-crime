@@ -8,7 +8,7 @@ Previous studies in Baltimore, Austin, and Cincinnati have linked more trees wit
 | Korbin White     | korbinvwhite | API calls - Census Bureau and DataSF San Francisco Street Tree Inventory |
 | Sophia Chung     | szphzz       | Visualization - StreamLit                                                |
 | Brendan Waterval | Brendanw1    | Webscraping - SF Police Reports                                          |
-| Miguel Cerna     | dudedatas    | Data Cleaning & EDA                                                      |
+| Miguel Cerna     | dudedatas    | Data Cleansing - EDA                                                     |
 
 ---
 
