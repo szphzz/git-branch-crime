@@ -73,9 +73,37 @@ Make sure it writes the data in the bucket.
 
 ---
 ## Repository Structure
+Work is split across five branches, one per area of the project:
+
+| Branch         | Owner            | Purpose                                                          |
+|----------------|------------------|------------------------------------------------------------------|
+| `main`         | Everyone         | Project overview, README, and team contract                      |
+| `fastapi`      | Korbin White     | FastAPI endpoints for Census Bureau and DataSF Street Tree APIs  |
+| `scraping`     | Brendan Waterval | Web scraping of SF Police crime reports                          |
+| `cleaning-eda` | Miguel Cerna     | Data cleaning and exploratory data analysis                      |
+| `streamlit`    | Sophia Chung     | Streamlit dashboard and visualizations                           |
+
 ```
-.
-├── your_code.py
+main
+├── README.md
+└── Team_Contract.pdf
+
+fastapi
+├── fast_api/
+│   └── fast_api.py
 ├── .env_template
+└── README.md
+
+scraping
+└── README.md
+
+cleaning-eda
+├── cleaning_eda/
+│   ├── cleaning_eda.py
+│   └── test_inspect_data.py
+├── .gitignore
+└── README.md
+
+streamlit
 └── README.md
 ```
