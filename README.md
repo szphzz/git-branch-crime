@@ -4,7 +4,7 @@ Our project aims to find out if there is a correlation between the number of tre
 factors in San Francisco. Our findings could help residents, tourists, homebuyers, law enforcement, and city planners 
 better understand neighborhood conditions and public safety.
 
-**Live web app:** `https://git-branch-crime-streamlit-636031847641.us-west1.run.app/` --Cloud run url
+**Live web app:** `https://git-branch-crime-streamlit-636031847641.us-west1.run.app/`
 **API (private):** `https://api-server-xxxxx-uw.a.run.app`
 
 ---
@@ -15,9 +15,9 @@ better understand neighborhood conditions and public safety.
 | Name             | GitHubID     | Role / Focus                                                             |
 |------------------|--------------|--------------------------------------------------------------------------|
 | Korbin White     | korbinvwhite | API calls - Census Bureau and DataSF San Francisco Street Tree Inventory |
-| Sophia Chung     | szphzz       | Visualization - StreamLit                                                |
+| Sophia Chung     | szphzz       | Visualization - Streamlit                                                |
 | Brendan Waterval | Brendanw1    | Webscraping - SF Police Reports                                          |
-| Miguel Cerna     | dudedatas    | Data Cleansing - EDA                                                     |
+| Miguel Cerna     | dudedatas    | Data Cleaning - EDA                                                      |
 
 ## Problem Statement
 
@@ -43,7 +43,6 @@ GCP_SERVICE_ACCOUNT_KEY=
 GCP_PROJECT_ID=
 GCP_BUCKET_NAME=
 CENSUS-API-KEY=
-### Integration Goal
 ```
 
 ### Integration Goal
@@ -77,13 +76,13 @@ git-branch-crime/
 ├── cleaning_eda/
 │   ├── cleaned_tree_data.ipynb  # Tree cleaning and geographic joins
 │   ├── cleaned_census_data.ipynb # Census cleaning and processing
-│   └── crime.ipynb              # Crime data notebook
+│   └── crime.ipynb              # Crime data EDA
 │
 ├── streamlit/
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── streamlit_app.py         # Streamlit dashboard
-│   └── user_definition.py       # User-defined functions
+│   └── user_definition.py
 │
 ├── Current_Police_Districts_20261017.csv
 │                                 # Police district boundaries
@@ -97,7 +96,6 @@ git-branch-crime/
 ├── Team_Contract.pdf
 └── README.md                    # Project documentation
 ```
-Feel free to change the structure and name your own modules, libraries and packages.
 ---
 
 ## API Endpoints
@@ -105,21 +103,18 @@ Feel free to change the structure and name your own modules, libraries and packa
 | Method | Path | Purpose | Example |
 | --- | --- | --- | --- | --- |
 | `POST` | `/tree-data`   | Fetches SF street tree data from DataSF and uploads it to GCS   |
-| `POST` | `/census-data` | Fetches 2024 ACS census tract data for SF and uploads it to GCS | 
-
-
-Document your real endpoints here - But also make sure how to access FastAPI auto-docs (Update them using docstrings)
+| `POST` | `/census-data` | Fetches ACS census tract data for SF and uploads it to GCS      | 
 
 ---
 
 ## Setup — Local
-1. Clone your GitHub repository.
+1. Clone the GitHub repository.
 2. Install the required Python libraries.
 3. Set up the .env file with GCP credentials and the Census API key.
 4. Start FastAPI.
 5. Run the Streamlit web application.
-### Prerequisites
 
+### Prerequisites
 - Python 3.13
 - Docker
 - pip
@@ -135,12 +130,12 @@ cd git-branch-crime
 cp .env_template .env     # then fill in your values
 ```
 
-| Variable                  | Description                       | Example |
-|---------------------------|-----------------------------------| --- |
-| `GCP_PROJECT_ID`          | Your GCP project                  | `msds692-team3` |
-| `GCP_BUCKET_NAME`         | Bucket for raw + processed data   | `team3-bay-data` |
-| `GCP_SERVICE_ACCOUNT_KEY` | Path to the service account JSON  | `/tmp/gcp-key.json` |
-| `CENSUS_API_KEY`          | Key for census api key            | `abc123...` |
+| Variable                  | Description                       |
+|---------------------------|-----------------------------------|
+| `GCP_PROJECT_ID`          | Your GCP project                  |
+| `GCP_BUCKET_NAME`         | Bucket for raw + processed data   |
+| `GCP_SERVICE_ACCOUNT_KEY` | Path to the service account JSON  |
+| `CENSUS_API_KEY`          | Key for census api key            |
 
 `.env` and your `*.json` key are in `.gitignore`. **Never commit them.**
 
@@ -148,7 +143,7 @@ cp .env_template .env     # then fill in your values
 
 On api folder,
 ```bash
-docker build -t api .
+docker build -t fast_api .
 ```
 
 On streamlit folder,
