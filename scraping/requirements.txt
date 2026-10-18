@@ -1,0 +1,7 @@
+requests>=2.31
+beautifulsoup4>=4.12
+pdfplumber>=0.11
+python-dotenv>=1.0
+google-cloud-storage>=2.16
+fastapi>=0.110
+pytest>=8.0
