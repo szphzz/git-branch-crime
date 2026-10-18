@@ -18,13 +18,13 @@
 set -euo pipefail
 
 # ─── CONFIG : UPDATE THIS : ADD COMMENTS TO FILL IN. ──────────────────────────────────────────────────────────────────
-PROJECT_ID="your-gcp-project-id"
+PROJECT_ID="git-branch-crime"
 REGION="us-west1"                       # keep the same region everywhere
 
-API_SERVICE="api-server"                # Cloud Run service name for the API
-WEB_SERVICE="webapp"                    # Cloud Run service name for Streamlit
+API_SERVICE="git-branch-crime-fastapi"                # Cloud Run service name for the API
+WEB_SERVICE="git-branch-crime-streamlit"                    # Cloud Run service name for Streamlit
 
-API_DIR="./api"                         # folder holding the API Dockerfile
+API_DIR="./fast_api"                         # folder holding the API Dockerfile
 WEB_DIR="./streamlit"                   # folder holding the Streamlit Dockerfile
 
 API_PORT=8000                           # must match EXPOSE/CMD in api/Dockerfile
@@ -32,7 +32,7 @@ WEB_PORT=8501                           # Streamlit default
 
 # The key goes to Secret Manager and is mounted at runtime, and .env is read by gcloud at deploy time.
 ENV_FILE=".env"
-LOCAL_KEY_FILE="/tmp/gcp-key.json"
+LOCAL_KEY_FILE="/Users/szphzz/.ssh/git-branch-crime-1521ac11cd2f.json"
 
 # The code reads GCP_SERVICE_ACCOUNT_KEY as a file path and mount it
 GCP_KEY_SECRET="group-hw3-gcp-key"
