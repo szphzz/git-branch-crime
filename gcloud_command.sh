@@ -32,7 +32,7 @@ WEB_PORT=8501                           # Streamlit default
 
 # The key goes to Secret Manager and is mounted at runtime, and .env is read by gcloud at deploy time.
 ENV_FILE=".env"
-LOCAL_KEY_FILE="/Users/szphzz/.ssh/git-branch-crime-1521ac11cd2f.json"
+LOCAL_KEY_FILE=""
 
 # The code reads GCP_SERVICE_ACCOUNT_KEY as a file path and mount it
 GCP_KEY_SECRET="group-hw3-gcp-key"
