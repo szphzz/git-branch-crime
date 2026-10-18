@@ -12,10 +12,6 @@ from datetime import datetime
 
 app = FastAPI()
 
-@app.get("/")
-def health():
-    return {"status": "ok"}
-
 @app.post("/tree-data")
 def send_tree_data_to_bucket():
     #get the tree-data from data.sf.gov
@@ -127,11 +123,4 @@ def send_census_data_to_bucket():
     return {
         "message": "Census data uploaded successfully",
         "file_name": file_name
-    }
-
-@app.post("/collect")
-def collect():
-    return {
-        "tree": send_tree_data_to_bucket(),
-        "census": send_census_data_to_bucket(),
     }
