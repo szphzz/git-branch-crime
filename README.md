@@ -4,7 +4,7 @@ Our project aims to find out if there is a correlation between the number of tre
 factors in San Francisco. Our findings could help residents, tourists, homebuyers, law enforcement, and city planners 
 better understand neighborhood conditions and public safety.
 
-**Live web app:** `https://git-branch-crime-fastapi-636031847641.us-west1.run.app/` --Cloud run url
+**Live web app:** `https://git-branch-crime-streamlit-636031847641.us-west1.run.app/` --Cloud run url
 **API (private):** `https://api-server-xxxxx-uw.a.run.app`
 
 ---
